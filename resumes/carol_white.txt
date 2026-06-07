@@ -1,0 +1,32 @@
+CAROL WHITE
+Database Engineer | carol.white@email.com | +1-555-0505
+
+SUMMARY
+Skilled database engineer with 7 years of experience designing, optimizing,
+and maintaining large-scale relational and NoSQL database systems.
+
+TECHNICAL SKILLS
+- Databases: PostgreSQL, MySQL, Microsoft SQL Server, MongoDB
+- Query Languages: SQL, PL/SQL, T-SQL
+- Tools: pgAdmin, DBeaver, Liquibase, Apache Airflow
+- Cloud: AWS RDS, Azure SQL, Google Cloud Spanner
+
+EXPERIENCE
+
+Senior Database Engineer — DataSystems Corp  (2020 – Present)
+  * Architected SQL database schemas supporting 10M+ records for e-commerce platform.
+  * Wrote complex SQL stored procedures and triggers improving reporting speed by 50%.
+  * Designed disaster recovery strategies achieving 99.99% uptime SLA compliance.
+  * Led SQL query optimization sprints reducing avg query time from 8s to under 400ms.
+
+Database Administrator — Legacy Systems Inc.  (2017 – 2020)
+  * Managed 30+ SQL Server instances across development, staging, and production.
+  * Automated database backups using SQL scripts and Windows Task Scheduler.
+  * Migrated 5TB of legacy SQL data to PostgreSQL with zero data loss.
+
+EDUCATION
+B.Sc. Information Technology — City College (2017)
+
+CERTIFICATIONS
+• Microsoft Certified: Azure Database Administrator Associate
+• Oracle Database SQL Certified Associate

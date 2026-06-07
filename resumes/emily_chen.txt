@@ -1,0 +1,32 @@
+EMILY CHEN
+Full Stack Developer | emily.chen@email.com | +1-555-0707
+
+SUMMARY
+Versatile full stack developer with 5 years building end-to-end web applications.
+Comfortable across the entire stack from Python backend APIs to React frontends.
+
+TECHNICAL SKILLS
+- Backend: Python, FastAPI, Django REST Framework, Node.js
+- Frontend: React, TypeScript, Redux, Tailwind CSS
+- Databases: PostgreSQL, MongoDB, Redis
+- DevOps: Docker, GitHub Actions, AWS (Lambda, EC2, S3)
+
+EXPERIENCE
+
+Full Stack Developer — ProductLab  (2022 – Present)
+  * Built Python FastAPI backends serving 100K+ monthly active users.
+  * Developed Python data processing pipelines using Pandas and Celery.
+  * Created React dashboards consuming Python REST APIs with real-time WebSocket updates.
+  * Containerized Python services using Docker and orchestrated with GitHub Actions CI/CD.
+
+Software Developer — AgencyTech  (2019 – 2022)
+  * Developed Python Django applications for 15+ client engagements.
+  * Wrote Python unit tests achieving 90% coverage using pytest.
+  * Built and maintained React frontends integrated with Python backends.
+
+EDUCATION
+B.Sc. Computer Science — Engineering University (2019)
+
+CERTIFICATIONS
+• AWS Certified Solutions Architect – Associate
+• Python Institute PCAP Certification

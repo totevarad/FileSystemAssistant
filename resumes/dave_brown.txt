@@ -1,0 +1,28 @@
+DAVE BROWN
+Frontend Developer | dave.brown@email.com | +1-555-0606
+
+SUMMARY
+Creative frontend developer with 3 years of experience building responsive,
+performant web applications using modern JavaScript frameworks.
+
+TECHNICAL SKILLS
+- Languages: JavaScript, TypeScript, HTML5, CSS3
+- Frameworks: React, Next.js, Vue.js
+- Tools: Webpack, Vite, Tailwind CSS, Figma, Git
+- Testing: Jest, React Testing Library, Cypress
+
+EXPERIENCE
+
+Frontend Developer — WebAgency Creative  (2023 – Present)
+  * Built React component libraries used across 10+ client projects.
+  * Implemented Next.js SSR applications improving Core Web Vitals scores by 40%.
+  * Collaborated with UX designers translating Figma designs into pixel-perfect React components.
+  * Wrote TypeScript interfaces and React hooks improving code maintainability.
+
+Junior Web Developer — StartupFront  (2021 – 2023)
+  * Developed responsive web interfaces using React and Tailwind CSS.
+  * Integrated REST APIs into React applications using Axios and React Query.
+  * Created end-to-end tests with Cypress covering critical user flows.
+
+EDUCATION
+B.Sc. Web Technologies — Design & Tech Institute (2021)

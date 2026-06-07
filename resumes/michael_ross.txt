@@ -1,0 +1,28 @@
+MICHAEL ROSS
+Machine Learning Engineer | michael.ross@email.com | +1-555-0808
+
+SUMMARY
+ML engineer with 4 years of experience productionizing machine learning models
+and building ML infrastructure. Expertise in Python-based ML pipelines and MLOps.
+
+TECHNICAL SKILLS
+- Languages: Python, Scala
+- ML/AI: PyTorch, TensorFlow, scikit-learn, XGBoost, LangChain
+- MLOps: MLflow, DVC, Weights & Biases, Kubeflow
+- Data Engineering: Apache Spark, Airflow, dbt
+
+EXPERIENCE
+
+Machine Learning Engineer — AI Ventures  (2022 – Present)
+  * Designed end-to-end Python ML training pipelines reducing model training time by 60%.
+  * Deployed Python-based recommendation models serving 5M+ daily predictions.
+  * Built LLM-powered features using Python and LangChain for internal knowledge tools.
+  * Implemented ML experiment tracking using Python MLflow achieving full reproducibility.
+
+Data Scientist — AnalyticsHouse  (2020 – 2022)
+  * Built Python classification models for churn prediction with 88% F1 score.
+  * Created Python feature engineering pipelines processing 500GB weekly.
+
+EDUCATION
+M.Sc. Machine Learning — AI Research University (2020)
+B.Sc. Statistics — National University (2018)
