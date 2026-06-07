@@ -16,10 +16,10 @@ if %errorlevel% neq 0 (
 )
 
 :: Create venv if missing
-if not exist "venv\" (
-    echo Creating virtual environment (venv)...
+if not exist "venv" (
+    echo Creating virtual environment venv...
     python -m venv venv
-    if %errorlevel% neq 0 (
+    if errorlevel 1 (
         echo [ERROR] Failed to create virtual environment.
         pause
         exit /b 1
@@ -30,7 +30,7 @@ if not exist "venv\" (
 call venv\Scripts\activate
 echo Checking / installing dependencies...
 python -m pip install -r requirements.txt --quiet
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo [ERROR] Failed to install dependencies.
     pause
     exit /b 1
@@ -38,7 +38,7 @@ if %errorlevel% neq 0 (
 
 :: Check for .env file
 if not exist ".env" (
-    echo [WARNING] Configuration file (.env) was not found!
+    echo [WARNING] Configuration file .env was not found!
     if exist ".env.example" (
         echo Copying .env.example to .env ...
         copy .env.example .env >nul
@@ -51,16 +51,9 @@ if not exist ".env" (
 )
 
 :: Check if GROQ_API_KEY is placeholder
-python -c "
-import os
-from dotenv import load_dotenv
-load_dotenv()
-key = os.getenv('GROQ_API_KEY', '')
-if not key or 'your_groq_api_key_here' in key:
-    exit(1)
-" >nul 2>&1
+python -c "import os; from dotenv import load_dotenv; load_dotenv(); exit(1) if not os.getenv('GROQ_API_KEY') or 'your_groq_api_key_here' in os.getenv('GROQ_API_KEY', '') else exit(0)" >nul 2>&1
 
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo [ACTION REQUIRED] GROQ_API_KEY is empty or still has placeholder in '.env'.
     echo Please open '.env' and configure your Groq API Key first.
     pause
