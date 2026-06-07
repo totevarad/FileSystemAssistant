@@ -92,6 +92,9 @@ FileSystemAssistant/
 ├── llm_file_assistant.py     # LLM agent & CLI entrypoint (Part B)
 ├── requirements.txt          # Python dependencies
 ├── specs.md                  # Tech stack and rationale specification
+├── howtouse.md               # User guide for starting the assistant
+├── run.bat                   # Double-clickable Windows launcher
+├── run.sh                    # Linux/macOS launcher script
 ├── .env.example              # Environment variable template
 └── README.md                 # This file
 ```
