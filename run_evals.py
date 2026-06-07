@@ -1,4 +1,4 @@
-﻿"""
+"""
 run_evals.py â€” Quick static evaluation script for Phases 1 & 2.
 
 Usage:
@@ -46,7 +46,7 @@ env_ex = Path(".env.example")
 check(".env.example exists", env_ex.exists())
 if env_ex.exists():
     env_text = env_ex.read_text(encoding="utf-8")
-    check("GEMINI_API_KEY in .env.example",  "GEMINI_API_KEY"  in env_text)
+    check("GROQ_API_KEY in .env.example",  "GROQ_API_KEY"  in env_text)
     check("LLM_MODEL in .env.example",       "LLM_MODEL"       in env_text)
     check("RESUMES_DIR in .env.example",     "RESUMES_DIR"     in env_text)
     check("OUTPUTS_DIR in .env.example",     "OUTPUTS_DIR"     in env_text)
@@ -63,7 +63,7 @@ check("README.md exists", Path("README.md").exists())
 if Path("README.md").exists():
     rm_text = Path("README.md").read_text(encoding="utf-8")
     check("README has install section",    "pip install"     in rm_text)
-    check("README has GEMINI_API_KEY",     "GEMINI_API_KEY"  in rm_text)
+    check("README has GROQ_API_KEY",     "GROQ_API_KEY"  in rm_text)
     check("README has run instructions",   "llm_file_assistant.py" in rm_text)
 
 check("venv/Scripts/python.exe exists", Path("venv/Scripts/python.exe").exists())
@@ -81,8 +81,8 @@ if resumes_dir.exists():
 env_file = Path(".env")
 if env_file.exists():
     env_content = env_file.read_text(encoding="utf-8")
-    has_real_key = "GEMINI_API_KEY" in env_content and "your_gemini_api_key_here" not in env_content
-    check(".env has real GEMINI_API_KEY set", has_real_key,
+    has_real_key = "GROQ_API_KEY" in env_content and "your_groq_api_key_here" not in env_content
+    check(".env has real GROQ_API_KEY set", has_real_key,
           "Key still has placeholder value" if not has_real_key else "")
 else:
     print(f"  {WARN} .env file not found â€” create it from .env.example before Phase 3")

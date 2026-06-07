@@ -646,6 +646,15 @@ You:         (press Enter with empty input)
 ```
 **Expected behavior:** CLI re-prompts without calling the LLM or crashing.
 
+#### P3-NEG-06 — Out-of-scope/unrelated query is rejected politely
+
+```
+You: what is the capital of India
+```
+**Expected behavior:**
+- LLM rejects the request without calling any tools.
+- Responds stating that it is a File System Assistant specialized in resume management and file-system tasks, and lists what it can do.
+
 ---
 
 ---

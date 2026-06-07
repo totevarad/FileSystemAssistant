@@ -7,7 +7,7 @@ A command-line utility that bridges **Large Language Models (LLMs)** with local 
 ## 📦 Prerequisites
 
 - Python 3.10 or higher
-- An [Google Gemini API key](https://aistudio.google.com/app/apikey) (free tier available)
+- A [Groq API key](https://console.groq.com/keys)
 
 ---
 
@@ -43,9 +43,9 @@ pip install -r requirements.txt
 copy .env.example .env    # Windows
 cp .env.example .env      # macOS/Linux
 
-# Edit .env and add your Gemini API key (from https://aistudio.google.com/app/apikey)
-GEMINI_API_KEY=AIza...
-LLM_MODEL=gemini-1.5-pro
+# Edit .env and add your Groq API key (from https://console.groq.com/keys)
+GROQ_API_KEY=gsk_...
+LLM_MODEL=openai/gpt-oss-120b
 RESUMES_DIR=resumes
 OUTPUTS_DIR=outputs
 ```
@@ -91,6 +91,7 @@ FileSystemAssistant/
 ├── fs_tools.py               # Core file system tool functions (Part A)
 ├── llm_file_assistant.py     # LLM agent & CLI entrypoint (Part B)
 ├── requirements.txt          # Python dependencies
+├── specs.md                  # Tech stack and rationale specification
 ├── .env.example              # Environment variable template
 └── README.md                 # This file
 ```
@@ -124,7 +125,7 @@ When the assistant generates summary files, it follows this naming pattern:
 
 | Package | Purpose |
 | :--- | :--- |
-| `google-generativeai` | Gemini LLM API client with Function Calling support |
+| `groq` | Groq LLM API client with Function Calling support |
 | `pypdf` | PDF text extraction |
 | `python-docx` | DOCX parsing |
 | `python-dotenv` | `.env` configuration loading |
