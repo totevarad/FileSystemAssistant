@@ -18,9 +18,9 @@ We provide double-clickable launcher scripts that automatically handle Python vi
 
 ### Windows (cmd / PowerShell)
 1. **Double-click** the [run.bat](file:///c:/Users/varad/Desktop/Gen%20AI/FileSystemAssistant/run.bat) file at the project root.
-2. On first run, it will automatically create `venv/`, install dependencies, copy `.env.example` to `.env`, and prompt you to add your key.
+2. On first run, it will automatically create `venv/`, install dependencies (including the `rich` Terminal UI package), copy `.env.example` to `.env`, and prompt you to add your key.
 3. Open [.env](file:///c:/Users/varad/Desktop/Gen%20AI/FileSystemAssistant/.env) in any text editor, replace `your_groq_api_key_here` with your real Groq API Key, and save.
-4. **Double-click** `run.bat` again to start the assistant shell!
+4. **Double-click** `run.bat` again to open the styled interactive Terminal dashboard!
 
 ### macOS / Linux
 1. Open a terminal in the project directory.
@@ -29,7 +29,7 @@ We provide double-clickable launcher scripts that automatically handle Python vi
    chmod +x run.sh
    ./run.sh
    ```
-3. Configure your `GROQ_API_KEY` inside the generated `.env` file and re-run `./run.sh`.
+3. Configure your `GROQ_API_KEY` inside the generated `.env` file and re-run `./run.sh` to start the styled Terminal dashboard.
 
 ---
 

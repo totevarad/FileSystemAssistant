@@ -3,7 +3,7 @@ llm_file_assistant.py — LLM-Powered File System Assistant (Part B)
 
 Connects the fs_tools.py service layer to Groq API via Tool Calling
 (Function Calling), implementing a ReAct (Reasoning + Acting) agent loop
-that handles complex, multi-step queries.
+that handles complex, multi-step queries inside a styled Terminal Interface.
 
 Usage:
     .\\venv\\Scripts\\python.exe llm_file_assistant.py
@@ -16,6 +16,12 @@ import time
 import re
 from dotenv import load_dotenv
 from groq import Groq
+
+# Rich styling library imports
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 import fs_tools
 
@@ -40,6 +46,7 @@ if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
     sys.exit(1)
 
 client = Groq(api_key=GROQ_API_KEY)
+console = Console()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -213,27 +220,56 @@ TOOL_DISPATCH: dict = {
 def _print_tool_call(fn_name: str, fn_args: dict) -> None:
     """Pretty-print a tool invocation to the console."""
     args_str = ", ".join(
-        f"{k}={repr(v)[:60]}" for k, v in fn_args.items()
+        f"[yellow]{k}[/yellow]={repr(v)[:60]}" for k, v in fn_args.items()
     )
-    print(f"\n  [Tool] {fn_name}({args_str})", flush=True)
+    console.print(f"\n  [bold blue]🔧 Tool Call:[/bold blue] [green]{fn_name}[/green]({args_str})")
 
 
 def _print_tool_result(result: dict | list) -> None:
     """Print a brief one-line summary of a tool result."""
     if isinstance(result, list):
-        print(f"         -> {len(result)} item(s) returned")
+        console.print(f"         [bold green]↳ Success:[/bold green] {len(result)} item(s) returned")
     elif isinstance(result, dict):
         status = result.get("status", "unknown")
         if status == "error":
-            print(f"         -> ERROR [{result.get('error_code')}]: {result.get('message')}")
+            console.print(f"         [bold red]↳ Error [{result.get('error_code')}]:[/bold red] [red]{result.get('message')}[/red]")
         elif "match_count" in result:
-            print(f"         -> {result['match_count']} match(es) found")
+            console.print(f"         [bold green]↳ Success:[/bold green] {result['match_count']} keyword match(es) found")
         elif "metadata" in result:
             meta = result["metadata"]
-            print(f"         -> {meta.get('file_type','?').upper()} read "
-                  f"({meta.get('character_count', 0):,} chars)")
+            console.print(f"         [bold green]↳ Success:[/bold green] {meta.get('file_type','?').upper()} parsed successfully ({meta.get('character_count', 0):,} characters)")
         else:
-            print(f"         -> {status}")
+            console.print(f"         [bold green]↳ Success:[/bold green] {status}")
+
+
+def print_welcome_dashboard() -> None:
+    """Print a beautiful startup interface dashboard in the terminal."""
+    console.clear()
+    title = Text("🤖 File System Assistant Terminal (Groq Engine)", style="bold cyan")
+    
+    # Config Table
+    config_table = Table(title="Configuration Settings", show_header=True, header_style="bold magenta")
+    config_table.add_column("Parameter", style="dim", width=25)
+    config_table.add_column("Value", style="green")
+    config_table.add_row("Model", LLM_MODEL)
+    config_table.add_row("Resumes Directory", RESUMES_DIR)
+    config_table.add_row("Outputs Directory", OUTPUTS_DIR)
+    
+    # Tools Table
+    tools_table = Table(title="Available CLI Capabilities", show_header=True, header_style="bold blue")
+    tools_table.add_column("Function Call", style="cyan")
+    tools_table.add_column("Description", style="white")
+    tools_table.add_row("list_files", "List resume files in the resumes/ directory.")
+    tools_table.add_row("read_file", "Read text & metadata from PDF, DOCX, or TXT resumes.")
+    tools_table.add_row("search_in_file", "Perform case-insensitive keyword searches on content.")
+    tools_table.add_row("write_file", "Save resume summaries and updates to outputs/ folder.")
+    
+    inst_text = Text("\nType your query below. Type 'exit' or 'quit' to close the terminal.\n", style="yellow")
+    
+    console.print(Panel(title, border_style="cyan"))
+    console.print(config_table)
+    console.print(tools_table)
+    console.print(inst_text)
 
 
 def run_agent(user_message: str, history: list) -> str:
@@ -260,86 +296,91 @@ def run_agent(user_message: str, history: list) -> str:
 
     max_iterations = 15  # safety guard against infinite tool-call loops
 
-    for iteration in range(1, max_iterations + 1):
+    with console.status("[bold green]Thinking...[/bold green]", spinner="dots") as status:
+        for iteration in range(1, max_iterations + 1):
 
-        # ── Groq API call (with 429 Rate Limit retry) ──────────────────────
-        retries = 3
-        backoff = 2
-        response = None
-        for attempt in range(retries + 1):
-            try:
-                response = client.chat.completions.create(
-                    model=LLM_MODEL,
-                    messages=history,
-                    tools=TOOLS,
-                    tool_choice="auto",
-                    temperature=0.2,
-                )
-                break
-            except Exception as e:
-                is_rate_limit = False
-                if hasattr(e, "status_code") and e.status_code == 429:
-                    is_rate_limit = True
-                elif "429" in str(e) or "rate_limit" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
-                    is_rate_limit = True
-                
-                if is_rate_limit and attempt < retries:
-                    # Try to extract retry delay from API error message
-                    match = re.search(r"retry in (\d+\.?\d*)s", str(e), re.IGNORECASE)
-                    if match:
-                        sleep_time = float(match.group(1)) + 1.0
-                    else:
-                        sleep_time = (backoff ** (attempt + 1)) * 5.0
-                    print(f"\n  [Rate Limit] Got 429. Retrying in {sleep_time:.1f}s... (Attempt {attempt+1}/{retries})", flush=True)
-                    time.sleep(sleep_time)
-                else:
-                    raise e
-
-        # Extract assistant message
-        assistant_message = response.choices[0].message
-        
-        # Append assistant response to history
-        history.append(assistant_message)
-
-        tool_calls = assistant_message.tool_calls
-
-        # ── No tool calls → final answer ─────────────────────────────────────
-        if not tool_calls:
-            return assistant_message.content or "(No response generated.)"
-
-        # ── Execute each tool call and collect responses ──────────────────────
-        for tool_call in tool_calls:
-            fn_name = tool_call.function.name
-            fn_args = json.loads(tool_call.function.arguments)
-
-            _print_tool_call(fn_name, fn_args)
-
-            # Dispatch to the registered Python function
-            if fn_name in TOOL_DISPATCH:
+            # ── Groq API call (with 429 Rate Limit retry) ──────────────────────
+            retries = 3
+            backoff = 2
+            response = None
+            for attempt in range(retries + 1):
                 try:
-                    result = TOOL_DISPATCH[fn_name](**fn_args)
-                except Exception as exc:
+                    response = client.chat.completions.create(
+                        model=LLM_MODEL,
+                        messages=history,
+                        tools=TOOLS,
+                        tool_choice="auto",
+                        temperature=0.2,
+                    )
+                    break
+                except Exception as e:
+                    is_rate_limit = False
+                    if hasattr(e, "status_code") and e.status_code == 429:
+                        is_rate_limit = True
+                    elif "429" in str(e) or "rate_limit" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
+                        is_rate_limit = True
+                    
+                    if is_rate_limit and attempt < retries:
+                        # Try to extract retry delay from API error message
+                        match = re.search(r"retry in (\d+\.?\d*)s", str(e), re.IGNORECASE)
+                        if match:
+                            sleep_time = float(match.group(1)) + 1.0
+                        else:
+                            sleep_time = (backoff ** (attempt + 1)) * 5.0
+                        status.update(f"[bold yellow]Rate limit hit. Retrying in {sleep_time:.1f}s...[/bold yellow]")
+                        time.sleep(sleep_time)
+                        status.update("[bold green]Thinking...[/bold green]")
+                    else:
+                        raise e
+
+            # Extract assistant message
+            assistant_message = response.choices[0].message
+            
+            # Append assistant response to history
+            history.append(assistant_message)
+
+            tool_calls = assistant_message.tool_calls
+
+            # ── No tool calls → final answer ─────────────────────────────────────
+            if not tool_calls:
+                return assistant_message.content or "(No response generated.)"
+
+            # ── Execute each tool call and collect responses ──────────────────────
+            for tool_call in tool_calls:
+                fn_name = tool_call.function.name
+                fn_args = json.loads(tool_call.function.arguments)
+
+                # Temporarily suspend status spinner to print tool calls cleanly
+                status.stop()
+                _print_tool_call(fn_name, fn_args)
+
+                # Dispatch to the registered Python function
+                if fn_name in TOOL_DISPATCH:
+                    try:
+                        result = TOOL_DISPATCH[fn_name](**fn_args)
+                    except Exception as exc:
+                        result = {
+                            "status": "error",
+                            "error_code": "DISPATCH_ERROR",
+                            "message": f"Unexpected error executing '{fn_name}': {exc}",
+                        }
+                else:
                     result = {
                         "status": "error",
-                        "error_code": "DISPATCH_ERROR",
-                        "message": f"Unexpected error executing '{fn_name}': {exc}",
+                        "error_code": "UNKNOWN_TOOL",
+                        "message": f"No tool registered with name '{fn_name}'.",
                     }
-            else:
-                result = {
-                    "status": "error",
-                    "error_code": "UNKNOWN_TOOL",
-                    "message": f"No tool registered with name '{fn_name}'.",
-                }
 
-            _print_tool_result(result)
+                _print_tool_result(result)
+                status.start()
 
-            # Append tool result to history
-            history.append({
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "name": fn_name,
-                "content": json.dumps(result, default=str, ensure_ascii=False)
-            })
+                # Append tool result to history
+                history.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": fn_name,
+                    "content": json.dumps(result, default=str, ensure_ascii=False)
+                })
 
     return (
         "[ERROR] The agent reached the maximum number of reasoning steps. "
@@ -348,7 +389,7 @@ def run_agent(user_message: str, history: list) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 6. CLI — Interactive Shell
+# 6. CLI — Interactive Terminal Shell
 # ─────────────────────────────────────────────────────────────────────────────
 
 def main():
@@ -358,13 +399,8 @@ def main():
     Maintains a persistent conversation history across all turns so that the
     agent can refer back to prior context within the same session.
     """
-    print("\n" + "=" * 62)
-    print("  LLM-Powered File System Assistant (Groq Version)")
-    print(f"  Model   : {LLM_MODEL}")
-    print(f"  Resumes : {RESUMES_DIR}/")
-    print(f"  Outputs : {OUTPUTS_DIR}/")
-    print("  Type 'exit' or 'quit' to end the session.")
-    print("=" * 62)
+    sys.stdout.reconfigure(encoding='utf-8')
+    print_welcome_dashboard()
 
     # Persistent conversation history for the session
     history = []
@@ -372,9 +408,9 @@ def main():
     while True:
         # ── Read user input ──────────────────────────────────────────────────
         try:
-            user_input = input("\nYou: ").strip()
+            user_input = console.input("\n[bold cyan]You :[/bold cyan] ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\n\nSession ended. Goodbye!")
+            console.print("\n\n[bold yellow]Session ended. Goodbye![/bold yellow]")
             break
 
         # Skip empty input
@@ -383,19 +419,17 @@ def main():
 
         # Exit commands
         if user_input.lower() in ("exit", "quit", "bye", "q"):
-            print("\nGoodbye!")
+            console.print("\n[bold yellow]Goodbye![/bold yellow]")
             break
 
         # ── Run agent and print response ─────────────────────────────────────
-        print("\nAssistant:", flush=True)
+        console.print("\n[bold magenta]Assistant:[/bold magenta]", style="dim")
         try:
             answer = run_agent(user_input, history)
-            print(answer)
+            console.print(answer)
         except Exception as exc:
-            print(
-                f"\n[ERROR] {type(exc).__name__}: {exc}\n"
-                "Please try again or type 'exit' to quit."
-            )
+            console.print(f"\n[bold red][ERROR] {type(exc).__name__}: {exc}[/bold red]")
+            console.print("Please try again or type 'exit' to quit.")
 
 
 if __name__ == "__main__":
