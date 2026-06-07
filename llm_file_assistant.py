@@ -89,12 +89,7 @@ For compound queries (e.g., "find Python resumes and summarize each"):
 - Your refusal response must explicitly state that you are a File System Assistant specialized in resume management and file-system tasks. Politely explain what you can do (e.g., list files, read contents, search keywords, summarize resumes, write outputs) and state that general knowledge or unrelated questions are out of scope.
 
 ## Response Formatting Constraints
-1. **read_file Output:** When presenting the contents or details of a file read via `read_file`, your response must FIRST display a structured metadata section showing:
-   - File Path
-   - File Type
-   - File Size (in bytes)
-   - Character Count
-   Present this metadata clearly (e.g., in a clean bulleted list or markdown table) BEFORE displaying any of the extracted text content or summary.
+1. **read_file Output:** When presenting the contents or details of a file read via `read_file`, your response must present the file details and contents in a structured JSON format containing the relevant fields and metadata (i.e., status, filepath, metadata dictionary containing file_size_bytes, file_type, and character_count, and the extracted text content). Wrap this JSON in a markdown code block (`json ...`) to make it easily readable.
 2. **search_in_file Output:** When presenting search results from `search_in_file`, format the output to be highly readable. Present matches in a clean structure (e.g., using bullet points or blockquotes) that clearly identifies the line number and the matching context, highlighting the keyword where possible. Group the matches by file path.
 
 ## Error Handling
@@ -235,20 +230,16 @@ def _print_tool_call(fn_name: str, fn_args: dict) -> None:
 
 
 def _print_tool_result(result: dict | list) -> None:
-    """Print a brief one-line summary of a tool result."""
-    if isinstance(result, list):
-        console.print(f"         [bold green]↳ Success:[/bold green] {len(result)} item(s) returned")
-    elif isinstance(result, dict):
-        status = result.get("status", "unknown")
-        if status == "error":
-            console.print(f"         [bold red]↳ Error [{result.get('error_code')}]:[/bold red] [red]{result.get('message')}[/red]")
-        elif "match_count" in result:
-            console.print(f"         [bold green]↳ Success:[/bold green] {result['match_count']} keyword match(es) found")
-        elif "metadata" in result:
-            meta = result["metadata"]
-            console.print(f"         [bold green]↳ Success:[/bold green] {meta.get('file_type','?').upper()} parsed successfully ({meta.get('character_count', 0):,} characters)")
-        else:
-            console.print(f"         [bold green]↳ Success:[/bold green] {status}")
+    """Print the structured JSON result of a tool call."""
+    console.print("         [bold green]↳ Tool Result JSON:[/bold green]")
+    if isinstance(result, dict):
+        # Truncate content in console print copy if it is extremely long
+        printable = result.copy()
+        if "content" in printable and isinstance(printable["content"], str) and len(printable["content"]) > 300:
+            printable["content"] = printable["content"][:300] + "... [TRUNCATED FOR DISPLAY]"
+        console.print_json(data=printable)
+    else:
+        console.print_json(data=result)
 
 
 def print_welcome_dashboard() -> None:
