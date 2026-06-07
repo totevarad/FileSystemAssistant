@@ -12,6 +12,10 @@ Usage:
 import os
 import sys
 import json
+
+# Force standard output to use UTF-8 to prevent encoding errors on Windows terminal
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 import time
 import re
 from dotenv import load_dotenv
@@ -89,8 +93,15 @@ For compound queries (e.g., "find Python resumes and summarize each"):
 - Your refusal response must explicitly state that you are a File System Assistant specialized in resume management and file-system tasks. Politely explain what you can do (e.g., list files, read contents, search keywords, summarize resumes, write outputs) and state that general knowledge or unrelated questions are out of scope.
 
 ## Response Formatting Constraints
-1. **read_file Output:** When presenting the contents or details of a file read via `read_file`, your response must present the file details and contents in a structured JSON format containing the relevant fields and metadata (i.e., status, filepath, metadata dictionary containing file_size_bytes, file_type, and character_count, and the extracted text content). Wrap this JSON in a markdown code block (`json ...`) to make it easily readable.
-2. **search_in_file Output:** When presenting search results from `search_in_file`, format the output to be highly readable. Present matches in a clean structure (e.g., using bullet points or blockquotes) that clearly identifies the line number and the matching context, highlighting the keyword where possible. Group the matches by file path.
+1. **read_file Output:** When presenting the contents or details of a file read via `read_file`, your response MUST follow this structure:
+   - Do NOT display, print, or repeat the metadata JSON block in your response, as the terminal already displays the Tool Result JSON containing the metadata.
+   - Instead, print a clear label or header like "**File Content:**" (or similar), and then directly display the extracted content of the file in its raw, properly structured text format with clear spacing, line breaks, and layout.
+   - Do NOT wrap the file content inside JSON or markdown code blocks (unless it is a code file). This prevents double printing and ensures the terminal output is clean, readable, and free of any duplicate prints.
+2. **search_in_file Output:** When presenting search results from `search_in_file`, you MUST NEVER use markdown tables. Tables are strictly forbidden. Instead, group matches by file path and display them in a clean, hierarchical list structure:
+   - Display each file on a new line with a file emoji and path (e.g., `### 📄 resumes/emily_chen.txt`).
+   - List each match as a bullet point under the file header.
+   - Display the line number in bold (e.g., `- **Line 12:**`) followed by the matching context.
+   - Separate files with a blank line to ensure high readability.
 
 ## Error Handling
 - If a tool returns status="error", translate it into a clear user-facing message.
@@ -233,10 +244,10 @@ def _print_tool_result(result: dict | list) -> None:
     """Print the structured JSON result of a tool call."""
     console.print("         [bold green]↳ Tool Result JSON:[/bold green]")
     if isinstance(result, dict):
-        # Truncate content in console print copy if it is extremely long
         printable = result.copy()
-        if "content" in printable and isinstance(printable["content"], str) and len(printable["content"]) > 300:
-            printable["content"] = printable["content"][:300] + "... [TRUNCATED FOR DISPLAY]"
+        if "content" in printable:
+            # Remove content field for console logging to prevent double printing and unreadable dump
+            printable.pop("content")
         console.print_json(data=printable)
     else:
         console.print_json(data=result)
