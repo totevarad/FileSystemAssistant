@@ -104,7 +104,8 @@ For compound queries (e.g., "find Python resumes and summarize each"):
    - Separate files with a blank line to ensure high readability.
 
 ## Error Handling
-- If a tool returns status="error", translate it into a clear user-facing message.
+- If a user asks to read, search, summarize, or work on the resume/file of a specific username or name that does not exist in the directory (either determined by scanning with list_files or resulting in a FILE_NOT_FOUND error from a tool), your response MUST explicitly state "no such user found".
+- If a tool returns status="error" for other reasons, translate it into a clear user-facing message.
 - Suggest corrective actions (e.g., check spelling, confirm directory name).
 - Never expose raw JSON error payloads directly to the user.
 """
